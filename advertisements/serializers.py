@@ -44,7 +44,9 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         text = '''В настоящее время у Вас 10 объявлений в статусе открыто.
                   Для открытия нового объявления необходимо закрыть одно из объявлений.'''
 
-        if self.context['request'].stream.method == 'PATCH':
+        if self.context['request'].stream.method == 'PATCH' or self.context['request'].stream.method == 'PUT':
+            if self.instance.status == 'CLOSED':
+                raise ValidationError('Вы пытаетесь изменить объявление, которое уже закрыто.')
             return data
         quantity = Advertisement.objects.filter(creator=self.context['request'].user, status='OPEN').count()
         if quantity >= 10:
